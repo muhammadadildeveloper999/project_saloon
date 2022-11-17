@@ -20,7 +20,7 @@ class BaseModel(models.Model):
 
 #Role table
 class Role(BaseModel):
-    role=models.CharField(choices=role,max_length=20,default="superadmin")
+    role = models.CharField(max_length=255, default='')
     def _str_(self):
         return self.role
 
@@ -53,17 +53,14 @@ class subcategory(BaseModel):
     def _str_(self):
         return self.subcategory_name
 
-
 #Packages
 class package(BaseModel):
     registration_date = models.DateTimeField(blank=True,null=True)
     end_date = models.DateTimeField(blank=True,null=True)
-    name = models.CharField(max_length=255, default='')
     description = models.CharField(max_length=255, default='')
-    charges = models.IntegerField(max_length=255, default='')
-    packagesStatus=models.CharField(max_length=255, default='')
-    packages=models.CharField(choices=two, max_length=20)
-    role_id = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+    charges = models.IntegerField(default='')
+    packagesStatus=models.CharField(max_length=255, default='False')
+    packages=models.CharField(choices=two, max_length=20, default='monthly')
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     
     def _str_(self):
@@ -76,8 +73,7 @@ class country(BaseModel):
     
     def _str_(self):
         return self.name
-
-
+        
 #City table
 class city(BaseModel):
     name = models.CharField(max_length=255,default='')
@@ -109,19 +105,18 @@ class facility(BaseModel):
     description = models.CharField(max_length=255,default='')
     price = models.FloatField(default=0)
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    account_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
+    register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
  
     def _str_(self):
         return self.description
 
 class appointment(BaseModel):
     description = models.CharField(max_length=255,default='')
-    Date = models.DateTimeField()
+    start_date = models.DateTimeField(blank=True,null=True)
     contact = models.CharField(max_length=255,default='')
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    account_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     facilty_id = models.ForeignKey(facility, blank = True, null = True, on_delete = models.CASCADE)
-    role_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
+    register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
 
     def _str_(self):
         return self.description
