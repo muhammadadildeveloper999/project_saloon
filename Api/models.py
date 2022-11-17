@@ -2,13 +2,17 @@ from django.db import models
 import uuid
 
 role = (
-    ('superadmin','superadmin')
+    ('admin','admin'),
+    ('manager','manager'),
+    ('customer','customer'),
+    ('user','user')
+    
 )
 
 two = (
+
     ('monthly','monthly'),
     ('yearly','yearly')
-
 )
 
 class BaseModel(models.Model):
@@ -20,9 +24,13 @@ class BaseModel(models.Model):
 
 #Role table
 class Role(BaseModel):
-    role = models.CharField(max_length=255, default='')
-    def _str_(self):
-        return self.role
+        # role = models.CharField(max_length=255, default='')
+        # role = models.CharField(choices=role,max_length=20,default="superadmin")    
+        role=models.CharField(choices=role, max_length=20, default='user')
+
+            
+        def _str_(self):
+            return self.role
 
 # register table uuit, created date & updated
 class register(BaseModel):
