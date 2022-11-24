@@ -1,3 +1,5 @@
+
+
 from django.db import models
 import uuid
 
@@ -20,28 +22,25 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True,blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True,blank=True,null=True)
     class Meta:
-        abstract = True                 
+        abstract = True                                             
 
 #Role table
-class Role(BaseModel):
-        # role = models.CharField(max_length=255, default='')
-        # role = models.CharField(choices=role,max_length=20,default="superadmin")    
-        role=models.CharField(choices=role, max_length=20, default='user')
-
-            
-        def _str_(self):
+class Role(BaseModel):  
+        role=models.CharField(max_length=20, default='user')
+        def __str__(self):
             return self.role
 
 # register table uuit, created date & updated
 class register(BaseModel):
     firstname = models.CharField(max_length=255, default='')
+    lastname = models.CharField(max_length=255, default='')
     email = models.EmailField(max_length=255, default='')
     password = models.CharField(max_length=255, default='')
     contact = models.CharField(max_length=255, default='')    
     role_id = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
-    def _str_(self):
-        return self.firstname
+    def __str__(self):
+        return self.email
 
 # category table
 class category(BaseModel):
@@ -49,7 +48,7 @@ class category(BaseModel):
     role_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
     
-    def _str_(self):
+    def __str__(self):
         return self.categoryname
 
 #SubCategory
@@ -58,7 +57,7 @@ class subcategory(BaseModel):
     category_id = models.ForeignKey(category, blank = True, null = True, on_delete = models.CASCADE)
     image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')    
     
-    def _str_(self):
+    def __str__(self):
         return self.subcategory_name
 
 #Packages
@@ -71,7 +70,7 @@ class package(BaseModel):
     packages=models.CharField(choices=two, max_length=20, default='monthly')
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     
-    def _str_(self):
+    def __str__(self):
         return self.registration_date
 
 #Country table
@@ -79,7 +78,7 @@ class country(BaseModel):
     name = models.CharField(max_length=255,default='') 
     account_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     
-    def _str_(self):
+    def __str__(self):
         return self.name
         
 #City table
@@ -87,18 +86,18 @@ class city(BaseModel):
     name = models.CharField(max_length=255,default='')
     country_id = models.ForeignKey(country,blank=True,null=True,on_delete=models.CASCADE)
 
-    def _str_(self):
+    def __str__(self):
         return self.name
     
 #Saloon
 class saloon(BaseModel):
-    name = models.CharField(max_length=255,default='')
+    saloon_name = models.CharField(max_length=255,default='')
     contact = models.CharField(max_length=255,default='')
     city_id = models.ForeignKey(city,blank=True,null=True,on_delete=models.CASCADE)    
-    role_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
+    role_id = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
-    def _str_(self):
-        return self.name
+    def __str__(self):
+        return self.saloon_name
 
 #Employee table
 class employee(BaseModel):
@@ -106,7 +105,7 @@ class employee(BaseModel):
     contact = models.CharField(max_length=255,default='')
     image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)    
-    def _str_(self):
+    def __str__(self):
         return self.name
 
 class facility(BaseModel):
@@ -115,7 +114,7 @@ class facility(BaseModel):
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
  
-    def _str_(self):
+    def __str__(self):
         return self.description
 
 class appointment(BaseModel):
@@ -126,14 +125,15 @@ class appointment(BaseModel):
     facilty_id = models.ForeignKey(facility, blank = True, null = True, on_delete = models.CASCADE)
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
 
-    def _str_(self):
+    def __str__(self):
         return self.description
-    
-# Login Data for records
-class whitelistToken(BaseModel): 
-    access_token = models.CharField(max_length=255, default='')
-    status = models.BooleanField(default = False)
-    account_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
-    
-    def _str_(self):
-        return self.access_token
+   
+    # Login Data for records
+class whitelistToken(models.Model): 
+    token = models.CharField(max_length=255, default='')
+    user_agent = models.TextField(default='')
+    created_at = models.DateTimeField(auto_now_add='True', blank = True, null = True)
+    role_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.token

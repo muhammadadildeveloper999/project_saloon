@@ -1,7 +1,6 @@
 from django.shortcuts import render
 import datetime
 import jwt
-# import api.emailpattern as em
 from decouple import config
 from django.conf import settings
 from django.db.models import F, Q
@@ -10,36 +9,376 @@ from django.shortcuts import render
 from passlib.hash import django_pbkdf2_sha256 as handler
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# import stripe
+import Api.usable as uc
+from .models import *                                  
 
-# import Api.usable as uc
-from .models import *
-# Create your views here.
+# All Roles Crud
+# Role Post_Api
+class roles(APIView):
+    def post(self, request):
+            requireFields = ['role']
+            validator = uc.keyValidation(True,True,request.data,requireFields)
 
-class categoryAdd(APIView):
+            if validator:
+                return Response(validator,status = 200)   
 
-### CATEGORY ADD
-   def post(self,request):
-      requireFields = ['name','description']
-      validator = uc.keyValidation(True,True,request.data,requireFields)
+            else:       
+                my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+                if my_token:
+                    role  = request.data.get('role')
+                    
+                    data = Role(role=role)
+                    data.save()
+
+                    return Response ({"status":True,"message":"Successfully Add"})
+                else:
+                    return Response({"status": False, "msg":"Unauthorized"})    
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------
+# Role get_Api    
+    def get(self, request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            data = Role.objects.all().values('role')
+                
+            return Response({'status':True, 'data': data})       
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})  
+
+####################################################################################################################  
+# Role Put_Api
+  
+    def put(self, request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireFields = ['role','uid']
+            validator = uc.keyValidation(True,True,request.data,requireFields)
+
+            if validator:
+                return Response(validator,status = 200)   
+
+            else:       
+                uid = request.data.get('uid')       
+                role = request.data.get("role")  
+
+                admin = Role.objects.filter(uid=uid).first()
+                if admin:
+                    admin.role=role
+                    admin.save()
+
+                    return Response({'status': True, 'Msg': 'data Update Successfully'}) 
+
+                else:
+                    return Response({"status": False, "msg":"invalid_Credentials"})
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})    
+####################################################################################################################################################
+# Role delete_Api
+    
+    def delete(self,request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireField = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireField)
+ 
+            if validator:
+                return Response(validator,status = 200)   
+
+            else:
+                uid = request.GET['uid']
+                data = Role.objects.filter(uid=uid).first()       
+                if data:
+                    data.delete()
+                    
+                    return Response({'status': True, 'Msg': 'data Delete Successfully'})
+                else:
+                    return Response({"status": False, "msg":"Unauthorized"})
+#     
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+# ==================================================================================================================================================
+# ROLE-GETSPECIFIC/API
+
+class datagets(APIView):
+      def get(self,request):
+          my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+          if my_token:  
+            requireFields = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireFields)
+        
+            if validator:
+                return Response(validator,status = 200)
+        
+            else:
+                uid = request.GET['uid']
+
+            data = Role.objects.filter(uid=uid).values('role').first()       
+        
+            if data:
+                return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data}) 
+            else:
+                return Response({"status": False, "msg":"Unauthorized"})
+          else:
+            return Response({"status": False, "msg":"Token Unauthorized"})    
+
+# ROLE-SIGNUP/API
+
+class Register(APIView):
+    def post(self,request):
+        requireFields = ['uid']
+        validator = uc.keyValidation(True,True,request.GET,requireFields)
+    
+        if validator:
+            return Response(validator,status = 200)
+    
+        else:
+            firstname  = request.data.get('firstname')
+            lastname = request.data.get('lastname')
+            email = request.data.get('email')
+            password = request.data.get('password')
+            contact = request.data.get('contact')
+            role_id = request.data.get('role_id')
             
-      if validator:
-         return Response(validator,status = 200)
+            if uc.checkemailforamt(email):
+                if not uc.passwordLengthValidator(password):
+                    return Response({"status":False, "message":"Password should not be than 8 or greater than 20"})
+
             
-      else:
-         my_token = uc.admintokenauth(request.META['HTTP_AUTHORIZATION'][7:])
-         if my_token:
-            name  = request.data.get('name')
-            description = request.data.get('description')
-            
-            access = Category.objects.filter(name = name ).first()
-            if access:
-               return Response({"status":False,"message":"Category Name Already Exist"})
-               
-            data = Category(name = name, description = description)
+            checkemail=register.objects.filter(email=email).first()
+            if checkemail:
+                return Response({"status":False, "message":"Email already exists"})
+
+            checkphone=register.objects.filter(contact=contact).first()
+            if checkphone:
+                return Response({"status":False, "message":"Phone number already exists please try different number"})
+        
+
+            objregister = Role.objects.filter(uid = role_id).first()
+        
+            data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact,  role_id=objregister)
             data.save()
 
-            return Response ({"status":True,"message":"Category Successlly Add"})
+            return Response ({"status":True,"message":"Successfully Registerd"})
 
+# ROLE-LOGIN/API
+
+class login(APIView):
+     def post(self,request):
+         requireFields = ['email','password']
+         validator = uc.keyValidation(True,True,request.data,requireFields)
+            
+         if validator:
+            return Response(validator,status = 200)
+            
          else:
-            return Response ({"status":False,"message":"Unauthorized"})
+               email = request.data.get('email')
+               password = request.data.get('password')
+               fetchAccount = register.objects.filter(email=email).first()
+               if fetchAccount:
+                  if handler.verify(password,fetchAccount.password):
+                     if fetchAccount.role_id.role == 'admin':
+                        access_token_payload = {
+                              'id':str(fetchAccount.uid),
+                              'firstname':fetchAccount.firstname, 
+                              'exp': datetime.datetime.utcnow() + datetime.timedelta(days=22),
+                              'iat': datetime.datetime.utcnow(),
+
+                           }
+
+                        
+                        access_token = jwt.encode(access_token_payload,config('adminkey'),algorithm = 'HS256')
+                        data = {'uid':fetchAccount.uid,'firstname':fetchAccount.firstname,'lastname':fetchAccount.lastname,'contact':fetchAccount.contact,'email':fetchAccount.email, 'Login_As':str(fetchAccount.role_id)}
+
+                        whitelistToken(token = access_token, user_agent = request.META['HTTP_USER_AGENT'],created_at = datetime.datetime.now(), role_id=fetchAccount).save()
+
+                        return Response({"status":True,"message":"Login Successlly","token":access_token,"admindata":data})
+
+                     if fetchAccount.role_id.role == 'superadmin':
+                        access_token_payload = {
+                              'id':str(fetchAccount.uid),
+                              'firstname':fetchAccount.firstname, 
+                              'email':fetchAccount.email, 
+                              'exp': datetime.datetime.utcnow() + datetime.timedelta(days=22),
+                              'iat': datetime.datetime.utcnow(),
+
+                           }
+
+                        
+                        access_token = jwt.encode(access_token_payload,config('superadminkey'),algorithm = 'HS256')
+                        data = {'uid':fetchAccount.uid,'firstname':fetchAccount.firstname,'lastname':fetchAccount.lastname,'contact':fetchAccount.contact, 'email':fetchAccount.email, 'Login_As':str(fetchAccount.role_id)}
+
+                        whitelistToken(token = access_token, user_agent = request.META['HTTP_USER_AGENT'],created_at = datetime.datetime.now(), role_id=fetchAccount).save()
+
+                        
+                        return Response({"status":True,"message":"Login Successlly","token":access_token,"superadmindata":data})
+                    
+                     if fetchAccount.role_id.role == 'manager':
+                            access_token_payload = {
+                            'id':str(fetchAccount.uid),
+                            'firstname':fetchAccount.firstname, 
+                            'email':fetchAccount.email, 
+                            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=22),
+                            'iat': datetime.datetime.utcnow(),
+
+                            }
+
+                            
+                            access_token = jwt.encode(access_token_payload,config('managerkey'),algorithm = 'HS256')
+                            data = {'uid':fetchAccount.uid,'firstname':fetchAccount.firstname,'lastname':fetchAccount.lastname,'contact':fetchAccount.contact,'email':fetchAccount.email, 'Login_As':str(fetchAccount.role_id)}
+
+                            whitelistToken(token = access_token, user_agent = request.META['HTTP_USER_AGENT'],created_at = datetime.datetime.now(), role_id=fetchAccount).save()
+
+                            
+                            return Response({"status":True,"message":"Login Successlly","token":access_token,"managerdata":data})
+                    
+                     if fetchAccount.role_id.role  == 'custumer':
+                        access_token_payload = {
+                              'id':str(fetchAccount.uid),
+                              'firstname':fetchAccount.firstname, 
+                              'email':fetchAccount.email, 
+                              'exp': datetime.datetime.utcnow() + datetime.timedelta(days=22),
+                              'iat': datetime.datetime.utcnow(),
+
+                           }
+                        access_token = jwt.encode(access_token_payload,config('customerkey'),algorithm = 'HS256')
+                        data = {'uid':fetchAccount.uid,'firstname':fetchAccount.firstname,'lastname':fetchAccount.lastname,'contact':fetchAccount.contact,'email':fetchAccount.email, 'Login_As':str(fetchAccount.role_id)}
+
+                        whitelistToken(token = access_token, user_agent = request.META['HTTP_USER_AGENT'],created_at = datetime.datetime.now(), role_id=fetchAccount).save()
+
+                        
+                        return Response({"status":True,"message":"Login Successlly","token":access_token,"customerdata":data})
+                     else:
+                        return Response({"status":False,"message":"Unable to login"})
+                  else:
+                     return Response({"status":False,"message":"Invalid Creadientialsl"})
+               else:
+                  return Response({"status":False,"message":"Unable to login"})
+
+# SALOON-POST/API
+
+class Salons(APIView):
+    def post(self, request):
+            requireFields = ['saloon_name','contact','city_id','role_id']
+            validator = uc.keyValidation(True,True,request.data,requireFields)
+
+            if validator:
+                return Response(validator,status = 200)   
+
+            else:       
+                my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+                if my_token:
+                    saloon_name  = request.data.get('saloon_name')
+                    contact  = request.data.get('contact')
+                    city_id  = request.data.get('city_id')
+                    role_id  = request.data.get('role_id')
+
+                    objcity = city.objects.filter(uid = city_id).first()
+                    objrole = Role.objects.filter(uid = role_id).first()
+
+                    checkphone=saloon.objects.filter(contact=contact).first()
+                    if checkphone:
+                        return Response({"status" : False, "message":"Contact number already exists please try different number"})
+
+                    data = saloon(saloon_name=saloon_name,contact=contact, city_id=objcity, role_id=objrole)
+                
+                    data.save()
+
+                    return Response ({"status":True,"message":"Successfully Add"})
+                else:
+                    return Response({"status": False, "msg":"Unauthorized"})    
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------
+# SALOON-GET/API
+    
+    def get(self, request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            data = saloon.objects.all().values('saloon_name','contact', CityName=F('city_id__name'), RoleName=F('role_id__role'))
+                
+            return Response({'status':True, 'data': data})       
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})  
+
+####################################################################################################################  
+# SALOON-PUT/API
+ 
+    def put(self, request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireFields = ['uid','saloon_name','contact','city_id','role_id']
+            validator = uc.keyValidation(True,True,request.data,requireFields)
+
+            if validator:
+                return Response(validator,status = 200)   
+
+            else:       
+                uid = request.data.get('uid')       
+                saloon_name = request.data.get("saloon_name")  
+                contact = request.data.get("contact")  
+                city_id = request.data.get("city_id")  
+                role_id = request.data.get("role_id")  
+
+                objchecked = city.objects.filter(uid = city_id).first()
+                objcheck = Role.objects.filter(uid = role_id).first()
+                
+                admin = saloon.objects.filter(uid=uid).first()
+                if admin:
+                    admin.saloon_name=saloon_name
+                    admin.contact=contact
+                    admin.city_id=objchecked
+                    admin.role_id=objcheck
+
+                    admin.save()
+
+                    return Response({'status': True, 'Msg': 'data Update Successfully'}) 
+                    
+                else:
+                    return Response({"status": False, "msg":"invalid_Credentials"})
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})    
+####################################################################################################################################################
+# SALOON-DELETE/API
+   
+    def delete(self,request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireField = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireField)
+ 
+            if validator:
+                return Response(validator,status = 200)   
+
+            else:
+                uid = request.GET['uid']
+                data = saloon.objects.filter(uid=uid).first()       
+                if data:
+                    data.delete()
+                    
+                    return Response({'status': True, 'Msg': 'data Delete Successfully'})
+                else:
+                    return Response({"status": False, "msg":"Invalid_Credentials"})
+#     
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+# ==================================================================================================================================================
+# SALOON-GETSPECIFIC/API
+class dataget_saloon(APIView):
+      def get(self,request):
+          my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+          if my_token:  
+            requireFields = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireFields)
+        
+            if validator:
+                return Response(validator,status = 200)
+                
+            else:
+                uid = request.GET['uid']
+
+            data = saloon.objects.filter(uid=uid).values('saloon_name','contact', CityName=F('city_id__name'), RoleName=F('role_id__role')).first()       
+        
+            if data:
+                return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data}) 
+            else:
+                return Response({"status": False, "msg":"Invalid_Credentials"})
+          else:
+            return Response({"status": False, "msg":"Unauthorized"})    
+            
