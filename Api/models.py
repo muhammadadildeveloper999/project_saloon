@@ -3,13 +3,6 @@
 from django.db import models
 import uuid
 
-role = (
-    ('admin','admin'),
-    ('manager','manager'),
-    ('customer','customer'),
-    ('user','user')
-    
-)
 
 two = (
 
@@ -66,7 +59,7 @@ class package(BaseModel):
     end_date = models.DateTimeField(blank=True,null=True)
     description = models.CharField(max_length=255, default='')
     charges = models.IntegerField(default='')
-    packagesStatus=models.CharField(max_length=255, default='False')
+    packagesStatus=models.BooleanField(max_length=255, default='False')
     packages=models.CharField(choices=two, max_length=20, default='monthly')
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
     
@@ -99,30 +92,34 @@ class saloon(BaseModel):
     def __str__(self):
         return self.saloon_name
 
+class service(BaseModel):
+    description = models.CharField(max_length=255,default='')
+    price = models.FloatField(default=0)
+    Service_Timing = models.DateTimeField(null=True, blank=True)
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+ 
+    def __str__(self):
+        return self.description
+
 #Employee table
 class employee(BaseModel):
     name = models.CharField(max_length=255,default='')
     contact = models.CharField(max_length=255,default='')
     image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
-    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
+    Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+
     def __str__(self):
         return self.name
-
-class facility(BaseModel):
-    description = models.CharField(max_length=255,default='')
-    price = models.FloatField(default=0)
-    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
- 
-    def __str__(self):
-        return self.description
 
 class appointment(BaseModel):
     description = models.CharField(max_length=255,default='')
     start_date = models.DateTimeField(blank=True,null=True)
     contact = models.CharField(max_length=255,default='')
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    facilty_id = models.ForeignKey(facility, blank = True, null = True, on_delete = models.CASCADE)
+    facilty_id = models.ForeignKey(service, blank = True, null = True, on_delete = models.CASCADE)
     register_id = models.ForeignKey(register, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
