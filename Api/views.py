@@ -158,42 +158,40 @@ class datagets(APIView):
 
 class Register(APIView):
    def post (self,request):
-        requireFields = ['firstname','lastname','email','password','contact', 'role_id']
+        requireFields = ['firstname','lastname','email','password','contact']
         validator = uc.keyValidation(True,True,request.data,requireFields)
                
         if validator:
             return Response(validator,status = 200)
                
         else:
-            my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
-            if my_token:
-                firstname = request.data.get('firstname')
-                lastname = request.data.get('lastname')
-                email = request.data.get('email')
-                password = request.data.get('password')
-                contact = request.data.get('contact')
-                role_id = request.data.get('role_id')
+            firstname = request.data.get('firstname')
+            lastname = request.data.get('lastname')
+            email = request.data.get('email')
+            password = request.data.get('password')
+            contact = request.data.get('contact')
 
-                objrole = Role.objects.filter(uid = role_id).first()
+            if uc.checkemailforamt(email):
+                if not uc.passwordLengthValidator(password):
+                    return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
 
-                if uc.checkemailforamt(email):
-                    if not uc.passwordLengthValidator(password):
-                        return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
+                checkemail=register.objects.filter(email=email).first()
+                if checkemail:
+                    return Response({"status":False, "message":"Email already exists"})
+            
+                checkphone=register.objects.filter(contact=contact).first()
+                if checkphone:
+                    return Response({"status":False, "message":"phone no already existsplease try different number"})
+        
 
-                    checkemail=register.objects.filter(email=email).first()
-                    if checkemail:
-                        return Response({"status":False, "message":"Email already exists"})
+                data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
+                
+                data.save()
 
-                    data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact,  role_id=objrole)
-                    
-                    data.save()
-
-                    return Response({"status":True,"message":"Account Created Successfully"})
-                else:
-                    return Response({"status":False,"message":"Email Format Is Incorrect"})
+                return Response({"status":True,"message":"Account Created Successfully"})
             else:
-                return Response({"status":False,"message":"Unauthorized"})
-
+                return Response({"status":False,"message":"Email Format Is Incorrect"})
+        
 # # ROLE-LOGIN/API
 
 class login(APIView):
@@ -267,7 +265,7 @@ class login(APIView):
                             
                             return Response({"status":True,"message":"Login Successlly","token":access_token,"managerdata":data})
                     
-                     if fetchAccount.role_id.role  == 'custumer':
+                     if fetchAccount.role_id.role  == 'customer':
                         access_token_payload = {
                               'id':str(fetchAccount.uid),
                               'firstname':fetchAccount.firstname, 
