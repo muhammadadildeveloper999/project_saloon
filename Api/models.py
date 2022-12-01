@@ -30,7 +30,7 @@ class register(BaseModel):
     email = models.EmailField(max_length=255, default='')
     password = models.CharField(max_length=255, default='')
     contact = models.CharField(max_length=255, default='')    
-    role_id = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+    role_id = models.ForeignKey(Role, on_delete = models.CASCADE)
 
     def __str__(self):
         return self.email

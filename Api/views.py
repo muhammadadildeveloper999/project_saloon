@@ -120,43 +120,43 @@ class datagets(APIView):
           else:
             return Response({"status": False, "msg":"Token Unauthorized"})    
 
-# User_Register/API
+# # User_Register/API
 
-class Register(APIView):
-   def post (self,request):
-        requireFields = ['firstname','lastname','email','password','contact']
-        validator = uc.keyValidation(True,True,request.data,requireFields)
+# class Register(APIView):
+#    def post (self,request):
+#         requireFields = ['firstname','lastname','email','password','contact']
+#         validator = uc.keyValidation(True,True,request.data,requireFields)
                
-        if validator:
-            return Response(validator,status = 200)
+#         if validator:
+#             return Response(validator,status = 200)
                
-        else:
-            firstname = request.data.get('firstname')
-            lastname = request.data.get('lastname')
-            email = request.data.get('email')
-            password = request.data.get('password')
-            contact = request.data.get('contact')
+#         else:
+#             firstname = request.data.get('firstname')
+#             lastname = request.data.get('lastname')
+#             email = request.data.get('email')
+#             password = request.data.get('password')
+#             contact = request.data.get('contact')
          
-            if uc.checkemailforamt(email):
-               if not uc.passwordLengthValidator(password):
-                  return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
+#             if uc.checkemailforamt(email):
+#                if not uc.passwordLengthValidator(password):
+#                   return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
 
-               checkemail=register.objects.filter(email=email).first()
-               if checkemail:
-                  return Response({"status":False, "message":"Email already exists"})
+#                checkemail=register.objects.filter(email=email).first()
+#                if checkemail:
+#                   return Response({"status":False, "message":"Email already exists"})
 
   
-               data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
+#                data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
               
-               data.save()
+#                data.save()
 
-               return Response({"status":True,"message":"Account Created Successfully"})
-            else:
-               return Response({"status":False,"message":"Email Format Is Incorrect"})
+#                return Response({"status":True,"message":"Account Created Successfully"})
+#             else:
+#                return Response({"status":False,"message":"Email Format Is Incorrect"})
 
 # Role_Register/API
 
-class Register_role(APIView):
+class Register(APIView):
    def post (self,request):
         requireFields = ['firstname','lastname','email','password','contact', 'role_id']
         validator = uc.keyValidation(True,True,request.data,requireFields)
@@ -173,7 +173,9 @@ class Register_role(APIView):
                 password = request.data.get('password')
                 contact = request.data.get('contact')
                 role_id = request.data.get('role_id')
-            
+
+                objrole = Role.objects.filter(uid = role_id).first()
+
                 if uc.checkemailforamt(email):
                     if not uc.passwordLengthValidator(password):
                         return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
@@ -182,9 +184,7 @@ class Register_role(APIView):
                     if checkemail:
                         return Response({"status":False, "message":"Email already exists"})
 
-                    checkSuper_Admin_Id = register.objects.filter(uid = role_id).first()
-
-                    data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact,  role_id=checkSuper_Admin_Id)
+                    data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact,  role_id=objrole)
                     
                     data.save()
 
@@ -232,6 +232,7 @@ class login(APIView):
                               'id':str(fetchAccount.uid),
                               'firstname':fetchAccount.firstname, 
                               'email':fetchAccount.email, 
+                              'role':fetchAccount.role_id.role, 
                               'exp': datetime.datetime.utcnow() + datetime.timedelta(days=22),
                               'iat': datetime.datetime.utcnow(),
 
