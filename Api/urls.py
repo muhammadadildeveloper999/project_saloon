@@ -13,5 +13,7 @@ path('Salons',Salons.as_view()),
 path('Survices',Survices.as_view()),
 path('dataget_survice',dataget_survice.as_view()),
 path('Employees',Employees.as_view()),
+path('Otp_sending',Otp_sending.as_view()),
+path('verify_otpcode',verify_otpcode.as_view()),
 
 ]

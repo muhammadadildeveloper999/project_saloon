@@ -29,7 +29,9 @@ class register(BaseModel):
     lastname = models.CharField(max_length=255, default='')
     email = models.EmailField(max_length=255, default='')
     password = models.CharField(max_length=255, default='')
-    contact = models.CharField(max_length=255, default='')    
+    contact = models.CharField(max_length=255, default='')   
+    oTP=models.IntegerField( default='0')
+    oTPStatus=models.BooleanField( default='False') 
     role_id = models.ForeignKey(Role, on_delete = models.CASCADE)
 
     def __str__(self):

@@ -2,6 +2,7 @@ from django.shortcuts import render
 import datetime
 import jwt
 from decouple import config
+from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import F, Q
 from django.http import HttpResponse
@@ -10,7 +11,8 @@ from passlib.hash import django_pbkdf2_sha256 as handler
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import Api.usable as uc
-from .models import *                                  
+from .models import *              
+import random
 
 # All Roles Crud
 # Role Post_Api
@@ -120,40 +122,6 @@ class datagets(APIView):
           else:
             return Response({"status": False, "msg":"Token Unauthorized"})    
 
-# # User_Register/API
-
-# class Register(APIView):
-#    def post (self,request):
-#         requireFields = ['firstname','lastname','email','password','contact']
-#         validator = uc.keyValidation(True,True,request.data,requireFields)
-               
-#         if validator:
-#             return Response(validator,status = 200)
-               
-#         else:
-#             firstname = request.data.get('firstname')
-#             lastname = request.data.get('lastname')
-#             email = request.data.get('email')
-#             password = request.data.get('password')
-#             contact = request.data.get('contact')
-         
-#             if uc.checkemailforamt(email):
-#                if not uc.passwordLengthValidator(password):
-#                   return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
-
-#                checkemail=register.objects.filter(email=email).first()
-#                if checkemail:
-#                   return Response({"status":False, "message":"Email already exists"})
-
-  
-#                data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
-              
-#                data.save()
-
-#                return Response({"status":True,"message":"Account Created Successfully"})
-#             else:
-#                return Response({"status":False,"message":"Email Format Is Incorrect"})
-
 # Role_Register/API
 
 class Register(APIView):
@@ -182,7 +150,7 @@ class Register(APIView):
                 checkphone=register.objects.filter(contact=contact).first()
                 if checkphone:
                     return Response({"status":False, "message":"phone no already existsplease try different number"})
-        
+
 
                 data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
                 
@@ -191,6 +159,44 @@ class Register(APIView):
                 return Response({"status":True,"message":"Account Created Successfully"})
             else:
                 return Response({"status":False,"message":"Email Format Is Incorrect"})
+
+
+# send_mail Api
+
+class Otp_sending(APIView):
+        def post(self, request):
+            email = request.POST.get('email')
+            
+            code = random.randint(99999,999999)
+
+            send_mail(
+                'forget email',f'forget token:{code}','ai9873999@gmail.com',
+                [email]
+            )
+
+            return Response({"status":True,"message":"Email send Successfully!",'otp':code})
+         
+
+# verify code_Api
+
+class verify_otpcode(APIView):
+        def post(self,request):
+            code=request.data.get('code')
+            email=request.data.get('email')
+
+            objverify =  register.objects.filter(email=email).first()
+            
+            if objverify:
+                if (objverify.oTP==int(code)):
+
+                    objverify.oTPStatus='True'
+                    objverify.save()
+                    return Response({"status":True, 'Msg':' VerifIcation Is True'})      
+                else:
+                    return Response({"status":False,  'Msg':'Invalid Code'})    
+            else:
+                return Response({"status":False,  'Msg':'Account doesnot Exists'})
+
         
 # # ROLE-LOGIN/API
 
