@@ -5,7 +5,7 @@ from django.contrib import admin
 from Api.models import*
 
 admin.site.register(Role)
-admin.site.register(register)
+admin.site.register(Account)
 admin.site.register(category)
 admin.site.register(subcategory)
 admin.site.register(package)

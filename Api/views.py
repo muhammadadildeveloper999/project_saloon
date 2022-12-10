@@ -122,7 +122,7 @@ class datagets(APIView):
           else:
             return Response({"status": False, "msg":"Token Unauthorized"})    
 
-# Role_Register/API
+# Role_Account/API
 
 class Register(APIView):
    def post (self,request):
@@ -138,21 +138,23 @@ class Register(APIView):
             email = request.data.get('email')
             password = request.data.get('password')
             contact = request.data.get('contact')
+            role_id = request.data.get('role_id')
+
+            objrole = Role.objects.filter(role = 'customer').first()
 
             if uc.checkemailforamt(email):
                 if not uc.passwordLengthValidator(password):
                     return Response({"status":False, "message":"password should not be than 8 or greater than 20"})
 
-                checkemail=register.objects.filter(email=email).first()
+                checkemail=Account.objects.filter(email=email).first()
                 if checkemail:
                     return Response({"status":False, "message":"Email already exists"})
             
-                checkphone=register.objects.filter(contact=contact).first()
+                checkphone=Account.objects.filter(contact=contact).first()
                 if checkphone:
                     return Response({"status":False, "message":"phone no already existsplease try different number"})
 
-
-                data = register(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact)
+                data = Account(firstname = firstname, lastname = lastname, email=email, password=handler.hash(password), contact=contact, role_id=objrole)
                 
                 data.save()
 
@@ -167,8 +169,10 @@ class Otp_sending(APIView):
         def post(self, request):
             email = request.POST.get('email')
             
-            code = random.randint(99999,999999)
+            objverify =  Account.objects.filter(email=email).first()
 
+            code = random.randint(99999,999999)
+            
             send_mail(
                 'forget email',f'forget token:{code}','ai9873999@gmail.com',
                 [email]
@@ -184,7 +188,7 @@ class verify_otpcode(APIView):
             code=request.data.get('code')
             email=request.data.get('email')
 
-            objverify =  register.objects.filter(email=email).first()
+            objverify =  Account.objects.filter(email=email).first()
             
             if objverify:
                 if (objverify.oTP==int(code)):
@@ -197,7 +201,6 @@ class verify_otpcode(APIView):
             else:
                 return Response({"status":False,  'Msg':'Account doesnot Exists'})
 
-        
 # # ROLE-LOGIN/API
 
 class login(APIView):
@@ -211,7 +214,7 @@ class login(APIView):
          else:
                email = request.data.get('email')
                password = request.data.get('password')
-               fetchAccount = register.objects.filter(email=email).first()
+               fetchAccount = Account.objects.filter(email=email).first()
                if fetchAccount:
                   if handler.verify(password,fetchAccount.password):
                      if fetchAccount.role_id.role == 'admin':
@@ -447,9 +450,9 @@ class Survices(APIView):
                     Added_by  = request.data.get('Added_by')
 
                     objsaloon = saloon.objects.filter(uid = saloon_id).first()
-                    objregister = Role.objects.filter(uid = Added_by).first()
+                    objAccount = Role.objects.filter(uid = Added_by).first()
 
-                    data = service(description=description,price=price, saloon_id=objsaloon, Added_by=objregister)
+                    data = service(description=description,price=price, saloon_id=objsaloon, Added_by=objAccount)
                 
                     data.save()
 
@@ -488,14 +491,14 @@ class Survices(APIView):
                 Added_by = request.data.get("Added_by")  
 
                 objsaloon = saloon.objects.filter(uid = saloon_id).first()
-                objregister = Role.objects.filter(uid = Added_by).first()
+                objAccount = Role.objects.filter(uid = Added_by).first()
 
                 admin = service.objects.filter(uid=uid).first()
                 if admin:
                     admin.description=description
                     admin.price=price
                     admin.saloon_id=objsaloon
-                    admin.Added_by=objregister
+                    admin.Added_by=objAccount
 
                     admin.save()
 
@@ -545,7 +548,7 @@ class dataget_survice(APIView):
             else:
                 uid = request.GET['uid']
 
-            data = service.objects.filter(uid=uid).values('description','price', Saloon_Name=F('saloon_id__saloon_name'), Registerator_User=F('Added_by__role')).first()       
+            data = service.objects.filter(uid=uid).values('description','price', Saloon_Name=F('saloon_id__saloon_name'), Accountator_User=F('Added_by__role')).first()       
         
             if data:
                 return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data}) 
@@ -627,7 +630,7 @@ class Employees(APIView):
 
                 objservice = service.objects.filter(uid = service_id).first()
                 objsaloon = saloon.objects.filter(uid = saloon_id).first()
-                objregister = Role.objects.filter(uid = Added_by).first()
+                objAccount = Role.objects.filter(uid = Added_by).first()
 
                 admin = employee.objects.filter(uid=uid).first()
                 if admin:
@@ -636,7 +639,7 @@ class Employees(APIView):
                     admin.image=image
                     admin.service_id=objservice
                     admin.saloon_id=objsaloon
-                    admin.Added_by=objregister
+                    admin.Added_by=objAccount
 
                     admin.save()
 
@@ -671,7 +674,6 @@ class Employees(APIView):
             return Response({"status": False, "msg":"Unauthorized"})
 # ==================================================================================================================================================
 # EMPLOYEE-GETSPECIFIC/API
-
 class dataget_employee(APIView):
       def get(self,request):
           my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
@@ -693,3 +695,66 @@ class dataget_employee(APIView):
                 return Response({"status": False, "msg":"Invalid_Credentials"})
           else:
             return Response({"status": False, "msg":"Unauthorized"})    
+# show service and saloon
+
+class Showsaloon(APIView):  
+    def get(self, request):        
+            
+        ser = saloon.objects.all().values('saloon_name',  'image', 'address' , survice_name=F('service_id__name'), survice_image=F('service_id__image'))                
+        # sal = saloon.objects.all().values('saloon_name','image', 'address')                        
+        return Response({'status':True, 'Services': ser})
+
+
+### get saloon data from service
+class dataget_saloon(APIView):
+      def get(self,request):
+        requireFields = ['uid']
+        validator = uc.keyValidation(True,True,request.GET,requireFields)
+    
+        if validator:
+            return Response(validator,status = 200)
+            
+        else:
+            uid = request.GET['uid']
+    
+            data = saloon.objects.filter(service_id__uid=uid).values('saloon_name',  'image', 'address')       
+            if data:
+                return Response({'status': True, 'data': data}) 
+            else:
+                return Response({"status": False, "msg":"Invalid id"})
+
+
+### get appointment data from saloon
+class service_detail_saloon(APIView):
+      def get(self,request):
+        requireFields = ['uid']
+        validator = uc.keyValidation(True,True,request.GET,requireFields)
+    
+        if validator:
+            return Response(validator,status = 200)
+            
+        else:
+            uid = request.GET['uid']
+    
+            data = saloon.objects.filter(saloon_id__uid=uid).values('saloon_name',  'image', 'address', Name=F('service_id__name')
+            , description=F('service_id__description'), Price=F('service_id__price'),  Before_Time=F('service_id__before_time'),)
+            if data:
+
+                return Response({'status': True, 'data': data}) 
+            else:
+                return Response({"status": False, "msg":"Invalid id"})
+
+
+class Stu_Class_Get(APIView):
+   def get(self, request):
+
+      data = service.objects.all().values('name')
+
+      for i in range(len(data)):
+
+         student_data = saloon.objects.all().values('saloon_name')
+         if  data:         
+             data[i]['student_data'] = student_data
+         else:
+          data[i]['Student'] =''
+      return Response({"status":True,'data':data,})
