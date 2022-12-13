@@ -83,7 +83,7 @@ class city(BaseModel):
         return self.name
 
 class service(BaseModel):
-    name = models.CharField(max_length=255,default='')
+    service_name = models.CharField(max_length=255,default='')
     description = models.CharField(max_length=255,default='') 
     price = models.FloatField(default=0)
     image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
@@ -92,7 +92,7 @@ class service(BaseModel):
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.service_name
 
 #Saloon
 class saloon(BaseModel):

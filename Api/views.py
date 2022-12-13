@@ -166,20 +166,24 @@ class Register(APIView):
 # send_mail Api
 
 class Otp_sending(APIView):
-        def post(self, request):
-            email = request.POST.get('email')
-            
-            objverify =  Account.objects.filter(email=email).first()
+    def post(self, request):
+        email = request.data.get('email')
+        
+        code = random.randint(99999,999999)
+                
+        if uc.checkemailforamt(email):    
+            checkemail=Account.objects.filter(email=email).first()
+            if checkemail:
+                return Response({"status":False, "message":"Email already exists"})
+        
+            else:
+                send_mail('Verification Email',f'Here is your verification code "{code}"','EMAIL_HOST_USER',[email],fail_silently=False,
+)
 
-            code = random.randint(99999,999999)
-            
-            send_mail(
-                'forget email',f'forget token:{code}','ai9873999@gmail.com',
-                [email]
-            )
+                return Response({"status":True,"message":"OTP send Successfully!",'otp':code})
+        else:
+            return Response({"status":False,"message":"Email Format Is Incorrect"})
 
-            return Response({"status":True,"message":"Email send Successfully!",'otp':code})
-         
 
 # verify code_Api
 
@@ -747,14 +751,39 @@ class service_detail_saloon(APIView):
 
 class Stu_Class_Get(APIView):
    def get(self, request):
+        
+            service_detail = service.objects.all().values('service_name', 'image')
 
-      data = service.objects.all().values('name')
+            for i in range(len(service_detail)):
 
-      for i in range(len(data)):
+                student_data = saloon.objects.all().values('saloon_name','uid','image', 'address')
+                
+                if service_detail:         
+                    service_detail[i]['Saloon_Detail'] = student_data
+                else:
+                    service_detail[i]['Student'] =''
+            return Response({"status":True,'service_Data':service_detail,})
 
-         student_data = saloon.objects.all().values('saloon_name')
-         if  data:         
-             data[i]['student_data'] = student_data
-         else:
-          data[i]['Student'] =''
-      return Response({"status":True,'data':data,})
+
+
+
+
+class addSlider(APIView):
+    def post(self, request):
+        
+        image = request.data.getlist('image')
+        heading = request.data.get('heading')
+        descrption = request.data.get('descrption')
+        subdescrption = request.data.get('subdescrption')
+        navbarid = request.data.get('navbarid')
+
+
+        sliderObj = Slider(heading = heading,descrption = descrption,subdescrption = subdescrption,navbarid = getcategory)
+        sliderObj.save()
+
+        for i in range(len(image)):
+
+            imageObj = SliderImage(sliderid = sliderObj,image =image[i])
+            imageObj.save()
+        return Response({"status":True,"message":"Slider Add successfully"})
+  
