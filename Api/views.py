@@ -9,7 +9,10 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from passlib.hash import django_pbkdf2_sha256 as handler
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
+from rest_framework import generics
+from .serializer import* 
 import Api.usable as uc
 from .models import *              
 import random
@@ -53,6 +56,7 @@ class roles(APIView):
         my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
         if my_token:
             requireFields = ['role','uid']
+            
             validator = uc.keyValidation(True,True,request.data,requireFields)
 
             if validator:
@@ -704,86 +708,112 @@ class dataget_employee(APIView):
 class Showsaloon(APIView):  
     def get(self, request):        
             
-        ser = saloon.objects.all().values('saloon_name',  'image', 'address' , survice_name=F('service_id__name'), survice_image=F('service_id__image'))                
+        ser = service.objects.all().values('uid' ,'service_name' , 'image')                
         # sal = saloon.objects.all().values('saloon_name','image', 'address')                        
         return Response({'status':True, 'Services': ser})
 
 
 ### get saloon data from service
+
 class dataget_saloon(APIView):
       def get(self,request):
-        requireFields = ['uid']
-        validator = uc.keyValidation(True,True,request.GET,requireFields)
-    
-        if validator:
-            return Response(validator,status = 200)
-            
-        else:
             uid = request.GET['uid']
+            
+            data = saloon.objects.filter(service_id__uid=uid).values('uid','saloon_name', 'image', 'address')       
+            
+            for i in range(len(data)):
+
+                student_data = saloon_image.objects.filter(saloon_id = data[i]['uid']).values('image')
+
+                if student_data:
+                                                                    
+                    imagelist = []
+                    for j in range(len(student_data)):
+                        
+                        imagelist.append(student_data[j]['image'])
+                        data[i]['saloon_image'] = imagelist
+                else:
+                    data[i]['Student'] =''
+
+            return Response({"status":True,'data':data})
+
+class Salon_Sub_detail(APIView):
+   def get(self, request):
+      uid = request.GET['uid']      
     
-            data = saloon.objects.filter(service_id__uid=uid).values('saloon_name',  'image', 'address')       
-            if data:
-                return Response({'status': True, 'data': data}) 
-            else:
-                return Response({"status": False, "msg":"Invalid id"})
+      data = category.objects.filter(saloon_id__uid=uid).values('uid','category_name')
+
+      for i in range(len(data)):
+
+        mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price')
+
+        if  data:         
+              data[i]['Survice_Lists'] = mydata
+              
+        else:
+            data[i]['Student'] =''
+
+      return Response({"status":True,'data':data,})
+
+class search (APIView):
+   def get (self,request):
+      
+      categoryname = request.GET['categoryname']
+      
+      data = category.objects.filter(categoryname__icontains = categoryname).values('categoryname','price','before_time','service_type')
+
+      return Response({"status":True,"data":data})
+
+class addimages(APIView):
+    def post(self, request):    
+        image = request.data.getlist('image')
+        saloon_name = request.data.get('saloon_name')
+        saloon_id = request.data.get('saloon_id')
+        address = request.data.get('address')
+
+        objsaloon_id = saloon_image.objects.filter(uid = saloon_id).first()
+
+        sliderObj = saloon(saloon_name = saloon_name , image = image , address = address)
+        sliderObj.save()    
+
+ 
+        for i in range(len(image)):
+            
+            imageObj = saloon_image(saloon_id = sliderObj,image =image[i])
+            imageObj.save()
+
+        return Response({"status":True,"message":"images Add successfully"})
+           
+
+class float_list_data(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
+
+    data = float_list.objects.filter(saloon_id__uid=uid).values('section_name')
+    if  data:         
+  
+      return Response({"status":True,'Saloon_data':data,})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})
+
 
 
 ### get appointment data from saloon
-class service_detail_saloon(APIView):
-      def get(self,request):
-        requireFields = ['uid']
-        validator = uc.keyValidation(True,True,request.GET,requireFields)
+# class service_detail_saloon(APIView):
+#       def get(self,request):
+#         requireFields = ['uid']
+#         validator = uc.keyValidation(True,True,request.GET,requireFields)
     
-        if validator:
-            return Response(validator,status = 200)
+#         if validator:
+#             return Response(validator,status = 200)
             
-        else:
-            uid = request.GET['uid']
+#         else:
+#             uid = request.GET['uid']
     
-            data = saloon.objects.filter(saloon_id__uid=uid).values('saloon_name',  'image', 'address', Name=F('service_id__name')
-            , description=F('service_id__description'), Price=F('service_id__price'),  Before_Time=F('service_id__before_time'),)
-            if data:
+#             data = saloon.objects.filter(saloon_id__uid=uid).values('saloon_name',  'image', 'address', Name=F('service_id__name')
+#             , description=F('service_id__description'), Price=F('service_id__price'),  Before_Time=F('service_id__before_time'),)
+#         if data:
 
-                return Response({'status': True, 'data': data}) 
-            else:
-                return Response({"status": False, "msg":"Invalid id"})
-
-
-class Stu_Class_Get(APIView):
-   def get(self, request):
-        
-            service_detail = service.objects.all().values('service_name', 'image')
-
-            for i in range(len(service_detail)):
-
-                student_data = saloon.objects.all().values('saloon_name','uid','image', 'address')
-                
-                if service_detail:         
-                    service_detail[i]['Saloon_Detail'] = student_data
-                else:
-                    service_detail[i]['Student'] =''
-            return Response({"status":True,'service_Data':service_detail,})
-
-
-
-
-
-class addSlider(APIView):
-    def post(self, request):
-        
-        image = request.data.getlist('image')
-        heading = request.data.get('heading')
-        descrption = request.data.get('descrption')
-        subdescrption = request.data.get('subdescrption')
-        navbarid = request.data.get('navbarid')
-
-
-        sliderObj = Slider(heading = heading,descrption = descrption,subdescrption = subdescrption,navbarid = getcategory)
-        sliderObj.save()
-
-        for i in range(len(image)):
-
-            imageObj = SliderImage(sliderid = sliderObj,image =image[i])
-            imageObj.save()
-        return Response({"status":True,"message":"Slider Add successfully"})
-  
+#             return Response({'status': True, 'data': data}) 
+#         else:
+#             return Response({"status": False, "msg":"Invalid id"})

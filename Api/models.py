@@ -35,23 +35,6 @@ class Account(BaseModel):
     def __str__(self):
         return self.email
 
-# category table
-class category(BaseModel):
-    categoryname = models.CharField(max_length=255, default='')
-    role_id = models.ForeignKey(Account, blank = True, null = True, on_delete = models.CASCADE)
-    image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
-
-    def __str__(self):
-        return self.categoryname
-
-#SubCategory
-class subcategory(BaseModel):
-    subcategory_name = models.CharField(max_length=255, default='')
-    category_id = models.ForeignKey(category, blank = True, null = True, on_delete = models.CASCADE)
-    image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
-
-    def __str__(self):
-        return self.subcategory_name
 
 #Packages
 class package(BaseModel):
@@ -82,13 +65,15 @@ class city(BaseModel):
     def __str__(self):
         return self.name
 
+
 class service(BaseModel):
     service_name = models.CharField(max_length=255,default='')
     description = models.CharField(max_length=255,default='') 
     price = models.FloatField(default=0)
-    image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
+    image = models.ImageField(upload_to='superadmin/')
     Service_Timing = models.DateTimeField(null=True, blank=True)
     before_time = models.TimeField(null=True, blank=True)
+    service_type = models.CharField(max_length=255,default='')
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
@@ -98,20 +83,71 @@ class service(BaseModel):
 class saloon(BaseModel):
     saloon_name = models.CharField(max_length=255,default='')
     contact = models.CharField(max_length=255,default='')
-    address = models.CharField(max_length=255,default='')
+    address = models.CharField(max_length=255,default='')   
+    image = models.ImageField(upload_to='superadmin/',default="")
     city_id = models.ForeignKey(city,blank=True,null=True,on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
     service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
     # role_id = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
         return self.saloon_name
+    
+class saloon_image(BaseModel):
+        image = models.ImageField(upload_to='superadmin/',default="")
+        saloon_id = models.ForeignKey(saloon ,blank=True,null=True,on_delete=models.CASCADE)
+# category table
+
+
+class category(BaseModel):
+    category_name = models.CharField(max_length=255, default='')
+    saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.category_name
+
+class services_list(BaseModel):
+    name = models.CharField(max_length=255, default='')
+    before_time = models.TimeField(null=True, blank=True)
+    service_type = models.CharField(max_length=255,default='')
+    price = models.FloatField(default=0)
+    saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
+    category_id= models.ForeignKey(category, blank = True, null = True, on_delete = models.CASCADE)
+
+    # role_id = models.ForeignKey(Account, blank = True, null = True, on_delete = models.CASCADE)
+    def __str__(self):
+        return self.name
+
+
+
+#Employee table
+class float_list(BaseModel):
+    section_name = models.CharField(max_length=255,default='')    
+    saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.section_name
+
+#SubCategory
+class subcategory(BaseModel):
+    subcategory_name = models.CharField(max_length=255, default='')
+    category_id = models.ForeignKey(category, blank = True, null = True, on_delete = models.CASCADE)
+    image = models.ImageField(upload_to='superadmin/')
+
+    def __str__(self):
+        return self.subcategory_name
+
+#Employee table
+class section(BaseModel):
+    section_name = models.CharField(max_length=255,default='')
+
+    def __str__(self):
+        return self.section_name
 
 #Employee table
 class employee(BaseModel):
     name = models.CharField(max_length=255,default='')
     contact = models.CharField(max_length=255,default='')
-    image = models.ImageField(upload_to='superadmin/',default='superadmin/dumm.jpg')
+    image = models.ImageField(upload_to='superadmin/')
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
     service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
     Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)

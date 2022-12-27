@@ -17,7 +17,12 @@ path('Otp_sending',Otp_sending.as_view()),
 path('verify_otpcode',verify_otpcode.as_view()),
 path('Showsaloon',Showsaloon.as_view()),
 path('dataget_saloon',dataget_saloon.as_view()),
-path('service_detail_saloon',service_detail_saloon.as_view()),
-path('Stu_Class_Get',Stu_Class_Get.as_view()),
+path('Salon_Sub_detail',Salon_Sub_detail.as_view()),
+path('search',search.as_view()),
+path('addimages',addimages.as_view()),
+path('float_list_data',float_list_data.as_view()),
+# path('dataget_image',dataget_image.as_view()),
+
+# path('dataget_emplo',dataget_emplo.as_view()),
 
 ]
