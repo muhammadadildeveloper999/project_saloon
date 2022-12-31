@@ -697,7 +697,7 @@ class dataget_employee(APIView):
 
             data = employee.objects.filter(uid=uid).values('name','contact', Saloon_Name=F('saloon_id__saloon_name'), Survice_Name=F('service_id__description'),  Added_By=F('Added_by__role')).first()       
         
-            if data:
+            if data:                                                                                                     
                 return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data}) 
             else:
                 return Response({"status": False, "msg":"Invalid_Credentials"})
@@ -797,23 +797,52 @@ class float_list_data(APIView):
         return Response({"status":True,'Msg':'Invalid Id'})
 
 
+class Reviews_Data(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
 
-### get appointment data from saloon
-# class service_detail_saloon(APIView):
-#       def get(self,request):
-#         requireFields = ['uid']
-#         validator = uc.keyValidation(True,True,request.GET,requireFields)
-    
-#         if validator:
-#             return Response(validator,status = 200)
-            
-#         else:
-#             uid = request.GET['uid']
-    
-#             data = saloon.objects.filter(saloon_id__uid=uid).values('saloon_name',  'image', 'address', Name=F('service_id__name')
-#             , description=F('service_id__description'), Price=F('service_id__price'),  Before_Time=F('service_id__before_time'),)
-#         if data:
+    data = review.objects.filter(float_list_id__saloon_id__uid=uid).values('name','description','by_name','by_name','date_created')
+    if  data:         
+      return Response({"status":True,'Saloon_data':data,})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})
 
-#             return Response({'status': True, 'data': data}) 
-#         else:
-#             return Response({"status": False, "msg":"Invalid id"})
+
+class Portfolio_Data(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
+
+    data = portfolio.objects.filter(float_list_id__saloon_id__uid=uid).values('image')
+    if  data:         
+      return Response({"status":True,'Saloon_data':data,})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})
+
+
+class Detail_Data(APIView):
+   def get(self, request):
+      uid = request.GET['uid']      
+
+      data = about_us.objects.filter(saloon_id__uid=uid).values('uid','heading','discription')
+      main = employee.objects.filter(saloon_id__uid=uid).values('uid','heading','name','image')
+      mydata = contact_buss_hour.objects.filter(saloon_id__uid=uid).values('uid','heading','discription','phone_no','monday','tuesday','wednesday','thursday','friday','saturday','sunday')
+      userdata = social_media_share.objects.filter(saloon_id__uid=uid).values('uid','heading','icon_name','icon_img')
+      youdata = venue_amenitie.objects.filter(saloon_id__uid=uid).values('uid','heading','venue')
+      yourdata = travel_fee_policy.objects.filter(saloon_id__uid=uid).values('uid','heading','discription')
+      yoursdata = pay_cancellation_policy.objects.filter(saloon_id__uid=uid).values('uid','heading','discription')
+      admindata = report.objects.filter(saloon_id__uid=uid).values('uid','heading','discription','name')
+
+    
+      return Response({"status":True,'about us':data, 'staffers': main,'contact_bussines_hour':mydata,'social_media_shares':userdata,'venue_amenities':youdata,'travel_fees_policy':yourdata,
+      'payment_cancellation_policy':yoursdata,'reports':admindata})
+
+
+class health_safety_rules(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
+
+    data = health_safety_rule.objects.filter(saloon_id__uid=uid).values('name')
+    if  data:        
+      return Response({"status":True,'Saloon_data':data,})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})

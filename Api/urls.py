@@ -21,8 +21,9 @@ path('Salon_Sub_detail',Salon_Sub_detail.as_view()),
 path('search',search.as_view()),
 path('addimages',addimages.as_view()),
 path('float_list_data',float_list_data.as_view()),
-# path('dataget_image',dataget_image.as_view()),
-
-# path('dataget_emplo',dataget_emplo.as_view()),
+path('Reviews_Data',Reviews_Data.as_view()),
+path('Portfolio_Data',Portfolio_Data.as_view()),
+path('Detail_Data',Detail_Data.as_view()),
+path('health_safety_rules',health_safety_rules.as_view()),
 
 ]

@@ -1,8 +1,5 @@
-
-
 from django.db import models
 import uuid
-
 
 two = (
 
@@ -67,7 +64,7 @@ class city(BaseModel):
 
 
 class service(BaseModel):
-    service_name = models.CharField(max_length=255,default='')
+    service_name = models.CharField(max_length=255,default='python manage.py runserver')
     description = models.CharField(max_length=255,default='') 
     price = models.FloatField(default=0)
     image = models.ImageField(upload_to='superadmin/')
@@ -117,8 +114,6 @@ class services_list(BaseModel):
     def __str__(self):
         return self.name
 
-
-
 #Employee table
 class float_list(BaseModel):
     section_name = models.CharField(max_length=255,default='')    
@@ -126,6 +121,122 @@ class float_list(BaseModel):
 
     def __str__(self):
         return self.section_name
+
+
+#Employee table
+class review(BaseModel):
+    name = models.CharField(max_length=255,default='')    
+    description = models.CharField(max_length=255,default='')    
+    by_name = models.CharField(max_length=255,default='')    
+    date_created = models.DateField(null=True, blank=True)
+    float_list_id= models.ForeignKey(float_list, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+#Employee table
+class portfolio(BaseModel):
+    image = models.ImageField(upload_to='superadmin/',default="")
+    float_list_id= models.ForeignKey(float_list, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __img__(self):
+        return self.image
+
+
+#Employee table
+class detail(BaseModel):
+    name = models.CharField(max_length=255,default='')    
+                                                                                                                                                
+    def __str__(self):
+        return self.name
+
+
+class about_us(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    discription = models.CharField(max_length=955,default='')                                       
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.discription
+
+#Employee table
+class employee(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    name = models.CharField(max_length=255,default='')
+    contact = models.CharField(max_length=255,default='')
+    image = models.ImageField(upload_to='superadmin/')
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
+# Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+class contact_buss_hour(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    discription = models.CharField(max_length=955,default='')                                       
+    phone_no = models.CharField(max_length=255,default='')    
+    monday = models.TimeField(null=True, blank=True)
+    tuesday = models.TimeField(null=True, blank=True)
+    wednesday = models.TimeField(null=True, blank=True)
+    thursday = models.TimeField(null=True, blank=True)
+    friday = models.TimeField(null=True, blank=True)
+    saturday = models.TimeField(null=True, blank=True)
+    sunday = models.TimeField(null=True, blank=True)
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.phone_no
+
+class social_media_share(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    icon_name = models.CharField(max_length=255,default='')    
+    icon_img = models.ImageField(upload_to='superadmin/')
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.icon_name
+
+class venue_amenitie(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    venue = models.CharField(max_length=255,default='')    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.venue
+
+class travel_fee_policy(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    discription = models.CharField(max_length=955,default='')    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.discription
+
+class pay_cancellation_policy(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    discription = models.CharField(max_length=955,default='')    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.discription
+
+class report(BaseModel):
+    heading = models.CharField(max_length=955,default='')                                       
+    name = models.CharField(max_length=255,default='')    
+    discription = models.CharField(max_length=255,default='')    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.discription
+
+
+class health_safety_rule(BaseModel):
+    name = models.CharField(max_length= 555,default='')    
+    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.name
 
 #SubCategory
 class subcategory(BaseModel):
@@ -143,17 +254,6 @@ class section(BaseModel):
     def __str__(self):
         return self.section_name
 
-#Employee table
-class employee(BaseModel):
-    name = models.CharField(max_length=255,default='')
-    contact = models.CharField(max_length=255,default='')
-    image = models.ImageField(upload_to='superadmin/')
-    saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
-    Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
-
-    def __str__(self):
-        return self.name
 
 class appointment(BaseModel):
     description = models.CharField(max_length=255,default='')
