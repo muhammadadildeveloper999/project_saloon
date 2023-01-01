@@ -645,6 +645,7 @@ class Employees(APIView):
                     admin.name=name
                     admin.contact=contact
                     admin.image=image
+                    
                     admin.service_id=objservice
                     admin.saloon_id=objsaloon
                     admin.Added_by=objAccount
@@ -819,7 +820,7 @@ class Portfolio_Data(APIView):
         return Response({"status":True,'Msg':'Invalid Id'})
 
 
-class Detail_Data(APIView):
+class Detail_Data(APIView): 
    def get(self, request):
       uid = request.GET['uid']      
 
