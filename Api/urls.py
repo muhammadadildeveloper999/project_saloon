@@ -25,5 +25,6 @@ path('Reviews_Data',Reviews_Data.as_view()),
 path('Portfolio_Data',Portfolio_Data.as_view()),
 path('Detail_Data',Detail_Data.as_view()),
 path('health_safety_rules',health_safety_rules.as_view()),
+path('employee_slot',employee_slot.as_view()),
 
 ]

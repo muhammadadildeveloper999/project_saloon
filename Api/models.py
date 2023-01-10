@@ -14,9 +14,10 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-# #Role table
+# #Role table``
 class Role(BaseModel):
         role=models.CharField(max_length=20, default='user')
+        
         def __str__(self):
             return self.role
 
@@ -45,7 +46,7 @@ class package(BaseModel):
 
     def __str__(self):
         return self.registration_date
-
+  
 #Country table
 class country(BaseModel):
     name = models.CharField(max_length=255,default='')
@@ -62,13 +63,12 @@ class city(BaseModel):
     def __str__(self):
         return self.name
 
-
 class service(BaseModel):
-    service_name = models.CharField(max_length=255,default='python manage.py runserver')
+    service_name = models.CharField(max_length=255,default='')
     description = models.CharField(max_length=255,default='') 
     price = models.FloatField(default=0)
     image = models.ImageField(upload_to='superadmin/')
-    Service_Timing = models.DateTimeField(null=True, blank=True)
+    Service_Timing = models.DateField(null=True, blank=True)
     before_time = models.TimeField(null=True, blank=True)
     service_type = models.CharField(max_length=255,default='')
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
@@ -109,12 +109,11 @@ class services_list(BaseModel):
     price = models.FloatField(default=0)
     saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
     category_id= models.ForeignKey(category, blank = True, null = True, on_delete = models.CASCADE)
-
     # role_id = models.ForeignKey(Account, blank = True, null = True, on_delete = models.CASCADE)
     def __str__(self):
         return self.name
 
-#Employee table
+#Employee table 
 class float_list(BaseModel):
     section_name = models.CharField(max_length=255,default='')    
     saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
@@ -161,16 +160,33 @@ class about_us(BaseModel):
 
 #Employee table
 class employee(BaseModel):
-    heading = models.CharField(max_length=955,default='')                                       
-    name = models.CharField(max_length=255,default='')
-    contact = models.CharField(max_length=255,default='')
-    image = models.ImageField(upload_to='superadmin/')
+    name = models.CharField(max_length=955,default='')
+    image = models.ImageField(upload_to='superadmin/',default="")
+    emp_about_description = models.CharField(max_length=255,default='')
+    heading = models.CharField(max_length=955,default='')
+    services_list_id = models.ForeignKey(services_list,blank=True,null=True,on_delete=models.CASCADE)
     saloon_id = models.ForeignKey(saloon,blank=True,null=True,on_delete=models.CASCADE)
-    service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
-# Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+    # service_id = models.ForeignKey(service,blank=True,null=True,on_delete=models.CASCADE)
+   # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.emp_about_description
+
+class employee_name(BaseModel):
+    employee_name = models.CharField(max_length=955,default='')
+    employee_image = models.ImageField(upload_to='superadmin/',default="")
+    employee_id = models.ForeignKey(employee, blank = True, null = True, on_delete = models.CASCADE)
+    # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.employee_name  
+
+class employee_timing(BaseModel):
+    timing = models.TimeField(null=True, blank=True)
+    employee_id = models.ForeignKey(employee, blank = True, null = True, on_delete = models.CASCADE)
+
+    def __int__(self):
+        return self.timing
 
 class contact_buss_hour(BaseModel):
     heading = models.CharField(max_length=955,default='')                                       

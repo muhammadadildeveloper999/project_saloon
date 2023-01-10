@@ -441,7 +441,7 @@ class dataget_saloon(APIView):
 
 class Survices(APIView):
     def post(self, request):
-            requireFields = ['description','price','saloon_id','Added_by']
+            requireFields = ['service_name','image']
             validator = uc.keyValidation(True,True,request.data,requireFields)
 
             if validator:
@@ -452,28 +452,27 @@ class Survices(APIView):
                 
                 if my_token:
                 
-                    description  = request.data.get('description')
-                    price  = request.data.get('price')
-                    saloon_id  = request.data.get('saloon_id')
-                    Added_by  = request.data.get('Added_by')
+                    service_name  = request.data.get('service_name')
+                    image  = request.data.get('image')
+                    # saloon_id  = request.data.get('saloon_id')
+                    # Added_by  = request.data.get('Added_by')
+                    # objsaloon = saloon.objects.filter(uid = saloon_id).first()
+                    # objAccount = Role.objects.filter(uid = Added_by).first()
 
-                    objsaloon = saloon.objects.filter(uid = saloon_id).first()
-                    objAccount = Role.objects.filter(uid = Added_by).first()
-
-                    data = service(description=description,price=price, saloon_id=objsaloon, Added_by=objAccount)
+                    data = service(service_name=service_name, image=image)
                 
                     data.save()
 
                     return Response ({"status":True,"message":"Successfully Add"}) 
                 else:
-                    return Response({"status": False, "msg":"Unauthorized"})           
+                    return Response({"status": False, "msg":"Unauthorized"})   
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------
 # SURVICE-GET/API
     
     def get(self, request):
         my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
         if my_token:
-            data = service.objects.all().values('description','price', Saloon_Name=F('saloon_id__saloon_name'), Added_By=F('Added_by__role'))
+            data = service.objects.all().values('service_name','image')
                 
             return Response({'status':True, 'data': data})       
         else:
@@ -485,7 +484,7 @@ class Survices(APIView):
     def put(self, request):
         my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
         if my_token:
-            requireFields = ['uid', 'description','price','saloon_id','Added_by']
+            requireFields = ['uid', 'service_name','image']
             validator = uc.keyValidation(True,True,request.data,requireFields)
 
             if validator:
@@ -493,20 +492,20 @@ class Survices(APIView):
 
             else:       
                 uid = request.data.get('uid')       
-                description = request.data.get("description")  
-                price = request.data.get("price")  
-                saloon_id = request.data.get("saloon_id")  
-                Added_by = request.data.get("Added_by")  
+                service_name = request.data.get("service_name")  
+                image = request.data.get("image")  
+                # saloon_id = request.data.get("saloon_id")  
+                # Added_by = request.data.get("Added_by")  
 
-                objsaloon = saloon.objects.filter(uid = saloon_id).first()
-                objAccount = Role.objects.filter(uid = Added_by).first()
+                # objsaloon = saloon.objects.filter(uid = saloon_id).first()
+                # objAccount = Role.objects.filter(uid = Added_by).first()
 
                 admin = service.objects.filter(uid=uid).first()
                 if admin:
-                    admin.description=description
-                    admin.price=price
-                    admin.saloon_id=objsaloon
-                    admin.Added_by=objAccount
+                    admin.service_name=service_name
+                    admin.image=image
+                    # admin.saloon_id=objsaloon
+                    # admin.Added_by=objAccount
 
                     admin.save()
 
@@ -556,7 +555,7 @@ class dataget_survice(APIView):
             else:
                 uid = request.GET['uid']
 
-            data = service.objects.filter(uid=uid).values('description','price', Saloon_Name=F('saloon_id__saloon_name'), Accountator_User=F('Added_by__role')).first()       
+            data = service.objects.filter(uid=uid).values('service_name','image').first()       
         
             if data:
                 return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data}) 
@@ -645,7 +644,6 @@ class Employees(APIView):
                     admin.name=name
                     admin.contact=contact
                     admin.image=image
-                    
                     admin.service_id=objservice
                     admin.saloon_id=objsaloon
                     admin.Added_by=objAccount
@@ -695,7 +693,7 @@ class dataget_employee(APIView):
                 
             else:
                 uid = request.GET['uid']
-
+                
             data = employee.objects.filter(uid=uid).values('name','contact', Saloon_Name=F('saloon_id__saloon_name'), Survice_Name=F('service_id__description'),  Added_By=F('Added_by__role')).first()       
         
             if data:                                                                                                     
@@ -822,7 +820,7 @@ class Portfolio_Data(APIView):
 
 class Detail_Data(APIView): 
    def get(self, request):
-      uid = request.GET['uid']      
+      uid = request.GET['uid']    
 
       data = about_us.objects.filter(saloon_id__uid=uid).values('uid','heading','discription')
       main = employee.objects.filter(saloon_id__uid=uid).values('uid','heading','name','image')
@@ -847,3 +845,30 @@ class health_safety_rules(APIView):
       return Response({"status":True,'Saloon_data':data,})
     else:
         return Response({"status":True,'Msg':'Invalid Id'})
+
+
+class employee_slot(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
+
+    data = employee_name.objects.filter(employee_id__saloon_id__uid=uid).values('employee_name')
+    mydata = employee_timing.objects.filter(employee_id__saloon_id__uid=uid).values('timing')
+
+    if  data:        
+      return Response({"status":True,'Saloon_data':data, 'saloondata':mydata})
+    else:   
+        return Response({"status":True,'Msg':'Invalid Id'})
+
+
+class employee_change(APIView):
+   def get(self, request):
+    uid = request.GET['uid']
+
+    data = employee_name.objects.filter(saloon_id__uid=uid).values('employee_name')
+    
+    if  data:        
+      return Response({"status":True,'Saloon_data':data, 'saloondata':mydata})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})
+
+
