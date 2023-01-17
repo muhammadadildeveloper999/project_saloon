@@ -46,7 +46,7 @@ class package(BaseModel):
 
     def __str__(self):
         return self.registration_date
-  
+
 #Country table
 class country(BaseModel):
     name = models.CharField(max_length=255,default='')
@@ -68,8 +68,6 @@ class service(BaseModel):
     description = models.CharField(max_length=255,default='') 
     price = models.FloatField(default=0)
     image = models.ImageField(upload_to='superadmin/')
-    Service_Timing = models.DateField(null=True, blank=True)
-    before_time = models.TimeField(null=True, blank=True)
     service_type = models.CharField(max_length=255,default='')
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
@@ -122,21 +120,23 @@ class float_list(BaseModel):
         return self.section_name
 
 
-#Employee table
+# # Employee table
 class review(BaseModel):
-    name = models.CharField(max_length=255,default='')    
-    description = models.CharField(max_length=255,default='')    
-    by_name = models.CharField(max_length=255,default='')    
+    comment = models.CharField(max_length=255,default='')  
+    star = models.IntegerField(default='0')    
     date_created = models.DateField(null=True, blank=True)
-    float_list_id= models.ForeignKey(float_list, blank = True, null = True, on_delete = models.CASCADE)
-
+    Account_id= models.ForeignKey(Account, blank = True, null = True, on_delete = models.CASCADE)
+    services_list_id = models.ForeignKey(services_list, blank = True, null = True, on_delete = models.CASCADE)
+    float_id = models.ForeignKey(float_list, blank = True, null = True, on_delete = models.CASCADE)
+    saloon_id = models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
+    
     def __str__(self):
-        return self.name
+        return self.comment
 
 #Employee table
 class portfolio(BaseModel):
     image = models.ImageField(upload_to='superadmin/',default="")
-    float_list_id= models.ForeignKey(float_list, blank = True, null = True, on_delete = models.CASCADE)
+    saloon_id= models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
 
     def __img__(self):
         return self.image
@@ -148,7 +148,6 @@ class detail(BaseModel):
                                                                                                                                                 
     def __str__(self):
         return self.name
-
 
 class about_us(BaseModel):
     heading = models.CharField(max_length=955,default='')                                       
