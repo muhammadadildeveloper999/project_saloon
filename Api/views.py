@@ -103,6 +103,7 @@ class verify_otpcode(APIView):
 
 # # User-LOGIN/API
 
+
 class login(APIView):
      def post(self,request):
          requireFields = ['email','password']
@@ -202,9 +203,9 @@ class login(APIView):
 class Showsaloon(APIView):
     def get(self, request):
 
-        ser = service.objects.all().values('uid' ,'service_name' , 'image')
-        # sal = saloon.objects.all().values('saloon_name','image', 'address')
-        return Response({'status':True, 'Services': ser})
+        cat = service.objects.all().values('uid' ,'service_name' , 'image')
+
+        return Response({'status':True, 'category': cat})
 
 ### get saloon data from service
 
@@ -240,7 +241,7 @@ class Salon_Sub_detail(APIView):
 
       for i in range(len(data)):
 
-        mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price')
+        mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price', 'service_type')
 
         if  data:
               data[i]['Survice_Lists'] = mydata
@@ -255,9 +256,9 @@ class Salon_Sub_detail(APIView):
 class search (APIView):
   def get (self,request):
 
-      categoryname = request.GET['categoryname']
+      category_name = request.GET['category_name']
 
-      data = category.objects.filter(categoryname__icontains = categoryname).values('categoryname','price','before_time','service_type')
+      data = service.objects.filter(category_name__icontains = category_name).values('category_name','price','before_time','service_type')
 
       return Response({"status":True,"data":data})
 
@@ -398,14 +399,18 @@ class employee_slot(APIView):
   def get(self, request):
     uid = request.GET['uid']
 
-    data = employee_name.objects.filter(saloon_id__uid=uid).values('employee_name', 'employee_image')
-    mydata = employee_timing.objects.filter(saloon_id__uid=uid).values('timing')
+    # data = employee_name.objects.filter(saloon_id__uid=uid).values('employee_name', 'employee_image')
+    mydata = employee_timing.objects.filter(saloon_id__uid=uid).values('startdate','enddate')
 
-    if  data:
-      return Response({"status":True,'Employee_Name':data, 'Employee_Timing':mydata})
+    # hour = 0.5
+    # while hour < 12.5:
+    #     print(f" Hours {hour} is :", (hour*60), " Minutes")
+    # hour = hour + 0.5
+
+    if  mydata:
+      return Response({"status":True ,'Employee_Timing':mydata})
     else:
         return Response({"status":True,'Msg':'Invalid Id'})
-
 
 
 
@@ -553,7 +558,7 @@ class Salons(APIView):
                 service_id = request.data.get('service_id')
 
                 objsaloon_id = saloon_image.objects.filter(uid = saloon_id).first()
-                objservice = service.objects.filter(service_name = service_id).first()
+                objservice = service_id.objects.filter(service_name = service_id).first()
 
                 sliderObj = saloon(saloon_name = saloon_name ,  address = address, service_id=objservice)
                 sliderObj.save()
@@ -613,7 +618,7 @@ class Salons(APIView):
                 if admin:
                     admin.saloon_name=saloon_name
                     admin.address=address
-                    admin.service_id=objchecked
+                    admin.category_id=objchecked
 
                     admin.save()
 
@@ -623,7 +628,7 @@ class Salons(APIView):
                     return Response({"status": False, "msg":"invalid_Credentials"})
         else:
             return Response({"status": False, "msg":"Unauthorized"})
-####################################################################################################################################################
+
 # SALOON-DELETE/API
 
     def delete(self,request):
@@ -654,7 +659,7 @@ class dataget_saloon(APIView):
       def get(self,request):
             uid = request.GET['uid']
 
-            data = saloon.objects.filter(service_id__uid=uid).values('uid','saloon_name',  'address')
+            data = saloon.objects.filter(service_id__uid=uid).values('uid','saloon_name','address')
 
             for i in range(len(data)):
 
@@ -672,50 +677,33 @@ class dataget_saloon(APIView):
 
             return Response({"status":True,'data':data})
 
-# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # SURVICE-POST/API
 
-class Survices(APIView):
+class Services(APIView):
     def post(self, request):
-            requireFields = ['service_name','image']
-            validator = uc.keyValidation(True ,True,request.data,requireFields)
-
-            if validator:
-                return Response(validator,status = 200)
-
-            else:
-                my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
-                if my_token:
-
-                    service_name  = request.data.get('service_name')
-                    image  = request.data.get('image')
-
-                    data = service(service_name=service_name, image=image)
-
-                    data.save()
-
-                    return Response ({"status":True,"message":"Successfully Add"})
-                else:
-                    return Response({"status": False, "msg":"Unauthorized"})
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------
-# SURVICE-GET/API
-
-    def get(self, request):
         my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
         if my_token:
-            data = service.objects.all().values('uid','service_name','image')
+            
+            combinedata = eval(request.data.get('combinedata'))
+            saloon_id  = request.data.get('saloon_id')
+            saloon_obj = saloon.objects.filter(saloon_name=saloon_id).first()
+            for i in range(len(combinedata)):
 
-            return Response({'status':True, 'data': data})
+                data = category(category_name = combinedata[i]['category_name'], saloon_id=saloon_obj)
+
+                data.save()
+
+            return Response ({"status":True,"message":"Successfully Add"})
         else:
-            return Response({"status": False, "msg":"Unauthorized"})
+            return Response({"status": False, "msg":"Unauthorized"})           
 
-####################################################################################################################
 # SURVICE-PUT/API
 
     def put(self, request):
         my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
         if my_token:
-            requireFields = ['uid', 'service_name','image']
+            requireFields = ['uid', 'category_name','saloon_id']
             validator = uc.keyValidation(True,True,request.data,requireFields)
 
             if validator:
@@ -723,13 +711,15 @@ class Survices(APIView):
 
             else:
                 uid = request.data.get('uid')
-                service_name = request.data.get("service_name")
-                image = request.data.get("image")
+                category_name = request.data.get("category_name")
+                saloon_id = request.data.get("saloon_id")
 
-                admin = service.objects.filter(uid=uid).first()
+                obj_saloon = saloon.objects.filter(saloon_name=saloon_id).first()
+
+                admin = category.objects.filter(uid=uid).first()
                 if admin:
-                    admin.service_name=service_name
-                    admin.image=image
+                    admin.category_name=category_name
+                    admin.saloon_id=obj_saloon
 
                     admin.save()
 
@@ -739,7 +729,7 @@ class Survices(APIView):
                     return Response({"status": False, "msg":"invalid_Credentials"})
         else:
             return Response({"status": False, "msg":"Unauthorized"})
-####################################################################################################################################################
+
 # SURVICE-DELETE/API
 
     def delete(self,request):
@@ -753,7 +743,114 @@ class Survices(APIView):
 
             else:
                 uid = request.GET['uid']
-                data = service.objects.filter(uid=uid).first()
+                data = category.objects.filter(uid=uid).first()
+                if data:
+                    data.delete()
+
+                    return Response({'status': True, 'Msg': 'data Delete Successfully'})
+                else:
+                    return Response({"status": False, "msg":"Invalid_Credentials"})
+#
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+
+
+# SURVICE_LIST-POST/API
+
+class Survices_List(APIView):
+    def post(self, request):
+           
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+
+            combinedata = eval(request.data.get('combinedata'))
+            category_id  = request.data.get('category_id')
+            
+            cat_obj = category.objects.filter(category_name=category_id).first()
+            for i in range(len(combinedata)):
+
+                data = services_list(name = combinedata[i]['name'], before_time = combinedata[i]['before_time'],price = combinedata[i]['price']
+                ,service_type = combinedata[i]['service_type'], category_id=cat_obj)
+
+                data.save()
+
+            return Response ({"status":True,"message":"Successfully Add"})
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+        
+# service_list-get/API
+
+    def get(self, request):
+        saloon_name = request.GET['saloon_name']
+
+        data = category.objects.filter(saloon_id__saloon_name=saloon_name).values('uid','category_name')
+
+        for i in range(len(data)):
+
+            mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price','name')
+
+            if  data:
+                data[i]['Survice_Lists'] = mydata
+
+            else:
+                data[i]['Student'] =''
+
+        return Response({"status":True,'data':data,})
+
+
+# SURVICE-PUT/API
+
+    def put(self, request):
+        requireFields = ['name','before_time','service_type','price','category_id']
+        validator = uc.keyValidation(True ,True,request.data,requireFields)
+
+        if validator:
+            return Response(validator,status = 200)
+
+        else:
+            my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+            if my_token:
+
+                uid = request.data.get('uid')
+                name = request.data.get("name")
+                before_time = request.data.get("before_time")
+                service_type = request.data.get("service_type")
+                price = request.data.get("price")
+                category_id = request.data.get("category_id")
+
+                service_obj = category.objects.filter(category_name=category_id).first() 
+
+                admin = services_list.objects.filter(uid=uid).first()
+                if admin:
+                    admin.name=name
+                    admin.before_time=before_time
+                    admin.service_type=service_type
+                    admin.price=price
+                    admin.category_id=service_obj
+
+                    admin.save()
+
+                    return Response({'status': True, 'Msg': 'data Update Successfully'})
+
+                else:
+                    return Response({"status": False, "msg":"invalid_Credentials"})
+            else:
+                return Response({"status": False, "msg":"Unauthorized"})
+
+# SURVICE-DELETE/API
+
+    def delete(self,request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireField = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireField)
+
+            if validator:
+                return Response(validator,status = 200)
+
+            else:
+                uid = request.GET['uid']
+                data = services_list.objects.filter(uid=uid).first()
                 if data:
                     data.delete()
 
@@ -764,45 +861,20 @@ class Survices(APIView):
         else:
             return Response({"status": False, "msg":"Unauthorized"})
 # ==================================================================================================================================================
-# SURVICE-GETSPECIFIC/API
-
-class dataget_survice(APIView):
-      def get(self,request):
-          my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
-          if my_token:
-            requireFields = ['uid']
-            validator = uc.keyValidation(True,True,request.GET,requireFields)
-
-            if validator:
-                return Response(validator,status = 200)
-
-            else:
-                uid = request.GET['uid']
-
-            data = service.objects.filter(uid=uid).values('service_name','image').first()
-
-            if data:
-                return Response({'status': True, 'Msg': 'data Get Successfully', 'data': data})
-            else:
-                return Response({"status": False, "msg":"Invalid_Credentials"})
-          else:
-            return Response({"status": False, "msg":"Unauthorized"})
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # float list crud
 
 # Float_list-get/API
 
 class Float_list_data(APIView):
   def get(self, request):
-    uid = request.GET['uid']
+    saloon_name = request.GET['saloon_name']
 
-    data = float_list.objects.filter(saloon_id__uid=uid).values('section_name')
+    data = float_list.objects.filter(saloon_id__saloon_name=saloon_name).values('uid','section_name', Saloon_Name=F('saloon_id__saloon_name'))
     if  data:
 
       return Response({"status":True,'Saloon_data':data,})
     else:
         return Response({"status":True,'Msg':'Invalid Id'})
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Float_list-post/API
 
@@ -876,9 +948,96 @@ class Float_list_data(APIView):
         else:
             return Response({"status": False, "msg":"Unauthorized"})
 
-#
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# SERVICE CRUD
+
+# service-get/API
+
+class Float_list_data(APIView):
+  def get(self, request):
+    uid = request.GET['uid']
+
+    data = float_list.objects.filter(saloon_id__uid=uid).values('section_name')
+    if  data:
+
+      return Response({"status":True,'Saloon_data':data,})
+    else:
+        return Response({"status":True,'Msg':'Invalid Id'})
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# service-post/API
+
+  def post (self, request):
+      combinedata = eval(request.data.get('combinedata'))
+      saloon_id  = request.data.get('saloon_id')
+      section_name  = request.data.get('section_name')
+
+      salon_id = saloon.objects.filter(saloon_name=saloon_id).first()
+
+      for i in range(len(combinedata)):
+
+
+        data = float_list(section_name = combinedata[i]['section_name'],saloon_id=salon_id)
+        data.save()
+        return Response ({"status":True,"message":"Sections successfully Add"})
+
+# service-update/API
+
+  def put(self, request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireFields = ['section_name','saloon_id','uid']
+            validator = uc.keyValidation(True,True,request.data,requireFields)
+
+            if validator:
+                return Response(validator,status = 200)
+
+            else:
+                uid = request.data.get('uid')
+                section_name = request.data.get("section_name")
+                saloon_id = request.data.get("saloon_id")
+
+
+                obj_salon = saloon.objects.filter(saloon_name = saloon_id).first()
+
+                admin = float_list.objects.filter(uid=uid).first()
+                if admin:
+                    admin.section_name=section_name
+                    admin.saloon_id=obj_salon
+
+                    admin.save()
+
+                    return Response({'status': True, 'Msg': 'data Update Successfully'})
+
+                else:
+                    return Response({"status": False, "msg":"invalid_Credentials"})
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+
+# service-delete/API
+
+  def delete(self,request):
+        my_token = uc.superadmin(request.META['HTTP_AUTHORIZATION'][7:])
+        if my_token:
+            requireField = ['uid']
+            validator = uc.keyValidation(True,True,request.GET,requireField)
+
+            if validator:
+                return Response(validator,status = 200)
+
+            else:
+                uid = request.GET['uid']
+                data = float_list.objects.filter(uid=uid).first()
+                if data:
+                    data.delete()
+
+                    return Response({'status': True, 'Msg': 'data Delete Successfully'})
+                else:
+                    return Response({"status": False, "msg":"Invalid_Credentials"})
+        else:
+            return Response({"status": False, "msg":"Unauthorized"})
+
+
 # EMPLOYEE-POST/API
 
 class Employees(APIView):
@@ -1019,4 +1178,3 @@ class dataget_employee(APIView):
             return Response({"status": False, "msg":"Unauthorized"})
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-

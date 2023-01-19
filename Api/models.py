@@ -65,10 +65,7 @@ class city(BaseModel):
 
 class service(BaseModel):
     service_name = models.CharField(max_length=255,default='')
-    description = models.CharField(max_length=255,default='') 
-    price = models.FloatField(default=0)
     image = models.ImageField(upload_to='superadmin/')
-    service_type = models.CharField(max_length=255,default='')
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
@@ -174,15 +171,16 @@ class employee(BaseModel):
 class employee_name(BaseModel):
     employee_name = models.CharField(max_length=955,default='')
     employee_image = models.ImageField(upload_to='superadmin/',default="")
-    employee_id = models.ForeignKey(employee, blank = True, null = True, on_delete = models.CASCADE)
+    saloon_id = models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
     # Added_by = models.ForeignKey(Role, blank = True, null = True, on_delete = models.CASCADE)
 
     def __str__(self):
         return self.employee_name  
 
 class employee_timing(BaseModel):
-    timing = models.TimeField(null=True, blank=True)
-    employee_id = models.ForeignKey(employee, blank = True, null = True, on_delete = models.CASCADE)
+    startdate = models.TimeField(null=True, blank=True)
+    enddate = models.TimeField(null=True, blank=True)
+    saloon_id = models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
 
     def __int__(self):
         return self.timing

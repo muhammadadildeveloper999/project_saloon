@@ -1,0 +1,15 @@
+[{"service_name":"basic","saloon_id":"Macon Hudson","service_name":"basic","saloon_id":"Macon Hudson","service_name":"normal","saloon_id":"Macon Hudson","service_name":"kid","saloon_id":"Macon Hudson"},{}]
+
+
+[{"name":"popular","before_time":"1h","service_type":"popular","price":"1h", "category_id":"basic"}
+,{"service_name":"basic","saloon_id":"Macon Hudson"},{"service_name":"basic","saloon_id":"Macon Hudson"},{"service_name":"basic","saloon_id":"Macon Hudson"},{"service_name":"basic","saloon_id":"Macon Hudson"},{"service_name":"basic","saloon_id":"Macon Hudson"}]
+
+[{"name":"popular","before_time":"1h""service_type":"popular" "price":"20$" "category_id":"basic"},
+{"name":"popular","before_time":"1h""service_type":"popular" "price":"20$" "category_id":"basic"},
+{"name":"popular","before_time":"1h""service_type":"popular" "price":"20$" "category_id":"basic"},
+{"name":"popular","before_time":"1h""service_type":"popular" "price":"20$" "category_id":"basic"}]
+
+[{"name":"popular","before_time":"1h","service_type":"popular","price":"20$","category_id":"basic"}],
+[{"name":"popular","before_time":"1h","service_type":"popular","price":"20$","category_id":"basic"}],
+[{"name":"popular","before_time":"1h","service_type":"popular","price":"20$","category_id":"basic"}],
+[{"name":"popular","before_time":"1h","service_type":"popular","price":"20$","category_id":"basic"}]
