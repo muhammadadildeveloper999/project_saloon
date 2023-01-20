@@ -178,9 +178,11 @@ class employee_name(BaseModel):
         return self.employee_name  
 
 class employee_timing(BaseModel):
-    startdate = models.TimeField(null=True, blank=True)
-    enddate = models.TimeField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    starttime = models.TimeField(null=True, blank=True)
+    endtime = models.TimeField(null=True, blank=True)
     saloon_id = models.ForeignKey(saloon, blank = True, null = True, on_delete = models.CASCADE)
+    employee_name_id = models.ForeignKey(employee_name, blank = True, null = True, on_delete = models.CASCADE)
 
     def __int__(self):
         return self.timing

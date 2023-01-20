@@ -33,6 +33,8 @@ path('Portfolio_Data',Portfolio_Data.as_view()),
 path('Detail_Data',Detail_Data.as_view()),
 path('health_safety_rules',health_safety_rules.as_view()),
 path('commits',commits.as_view()),
-path('employee_slot',employee_slot.as_view()),
+path('employe_name',employe_name.as_view()),
+path('employee_timing_slot',employee_timing_slot.as_view()),
+
 
 ]

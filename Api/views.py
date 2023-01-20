@@ -392,27 +392,44 @@ class health_safety_rules(APIView):
     else:
         return Response({"status":True,'Msg':'Invalid Id'})
 
-
-# Add Employee_Slot for Saloon Booking Section
-
-class employee_slot(APIView):
+# Add Employee_Name for Saloon Booking Section
+class employe_name(APIView):
   def get(self, request):
     uid = request.GET['uid']
 
-    # data = employee_name.objects.filter(saloon_id__uid=uid).values('employee_name', 'employee_image')
-    mydata = employee_timing.objects.filter(saloon_id__uid=uid).values('startdate','enddate')
-
-    # hour = 0.5
-    # while hour < 12.5:
-    #     print(f" Hours {hour} is :", (hour*60), " Minutes")
-    # hour = hour + 0.5
-
-    if  mydata:
-      return Response({"status":True ,'Employee_Timing':mydata})
+    data = employee_name.objects.filter(saloon_id__uid=uid).values('employee_name','employee_image')
+    if  data:
+      return Response({"status":True,'Empolyee_Name':data})
     else:
         return Response({"status":True,'Msg':'Invalid Id'})
 
+# Add Employee_Slot for Saloon Booking Section
 
+class employee_timing_slot(APIView):
+    def get(self, request):
+        uid = request.GET['uid']
+        starttime = request.query_params.get('starttime')
+        endtime = request.query_params.get('endtime')
+        try:
+            mydata = employee_timing.objects.filter(employee_name_id__uid=uid).values('starttime','endtime') 
+        except employee_timing.DoesNotExist:
+            return Response({"status":False,'Msg':'Saloon Id not found'})
+        
+        starttime = datetime.combine(datetime.now(), mydata[0]["starttime"])
+        endtime = datetime.combine(datetime.now(), mydata[0]["endtime"])
+        print(mydata[0]["starttime"])
+        print(mydata[0]["starttime"])
+
+        intervals = []
+        current_time = starttime
+        while current_time <= endtime:
+            intervals.append(current_time)
+            current_time += timedelta(minutes=30)
+         
+        if  mydata:
+            return Response({"status":True ,'Employee_Timing':intervals})
+        list index out of range
+        slove this error        
 
 # ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE  ADMINSIDEADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDE ADMINSIDEADMINSIDE
 
@@ -787,7 +804,7 @@ class Survices_List(APIView):
 
         for i in range(len(data)):
 
-            mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price','name')
+            mydata = services_list.objects.filter(category_id__uid=data[i]['uid']).values('uid','name','before_time', 'price','name', 'service_type')
 
             if  data:
                 data[i]['Survice_Lists'] = mydata
@@ -1087,7 +1104,7 @@ class Employees(APIView):
         else:
             return Response({"status": False, "msg":"Unauthorized"})
 
-####################################################################################################################
+############################### #####################################################################################
 # EMPLOYEE-PUT/API
 
     def put(self, request):
